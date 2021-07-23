@@ -9,17 +9,27 @@ async function main(rootLangRef) {
 
     const rootElem = document.getElementById("root");
     const timelineRootElem = document.createElement("div");
+    timelineRootElem.style.position = "relative";
 
+    let leftOffset = 0;
     for (const langData of langDataset) {
+        const langDivElem = document.createElement("div");
+        langDivElem.style.position = "relative";
+        langDivElem.style.left = `${leftOffset}px`;
+
         for (const langEvent of langData.events) {
             const langEventElem = document.createElement("p");
             langEventElem.innerText = `${langData.language} ${langEvent.version} (${langEvent.date})`;
-            timelineRootElem.appendChild(langEventElem);
+            langDivElem.appendChild(langEventElem);
         }
 
         const langInitEventElem = document.createElement("p");
         langInitEventElem.innerHTML = `<b>${langData.language} (${langData.init.date})</b>`;
-        timelineRootElem.appendChild(langInitEventElem);
+        langDivElem.appendChild(langInitEventElem);
+
+        timelineRootElem.appendChild(langDivElem);
+
+        leftOffset += 30;
     }
 
     rootElem.appendChild(timelineRootElem);
