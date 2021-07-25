@@ -3,6 +3,7 @@
         "python",
         "java",
         "ruby",
+        "go",
         "rust",
         "kotlin"
     ]
