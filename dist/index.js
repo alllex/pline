@@ -31,7 +31,7 @@ function renderTimeline(sortedLangEvents) {
 
   const timelineSlotHeight = 70;
   const langSlots = [];
-  const prevLangSlotIndices = new Map();
+  const prevLangSlots = new Map();
 
   let timelineSlotTop = 0;
   for (langEvent of sortedLangEvents) {
@@ -50,12 +50,58 @@ function renderTimeline(sortedLangEvents) {
       langSlots.splice(langSlotIndex, 0, langEvent);
     }
 
+    const langEventTop = timelineSlotTop;
     const langSlotWidthStep = timelinePlaneWidth / (langSlots.length + 1);
     const langEventLeft = langSlotWidthStep * (langSlotIndex + 1);
 
-    prevLangSlotIndices.clear();
     for (let i = 0; i < langSlots.length; i++) {
-      prevLangSlotIndices.set(langSlots[i].langIndex, i);
+      const langIndex = langSlots[i].langIndex;
+      const prevLangSlot = prevLangSlots.get(langIndex);
+      if (prevLangSlot !== undefined) {
+        const prevLangSlotIndex = prevLangSlot.slotIndex;
+        if (i < prevLangSlotIndex) {
+          const slotGap = prevLangSlotIndex - i;
+          const topLineDiv = document.createElement("div");
+          topLineDiv.style.position = "absolute";
+          topLineDiv.style.zIndex = 1;
+          topLineDiv.style.top = `${prevLangSlot.top}px`;
+          topLineDiv.style.left = `${prevLangSlot.left - slotGap / 2}px`;
+          topLineDiv.style.height = `${(timelineSlotTop - prevLangSlot.top) / 2}px`;
+          topLineDiv.style.borderRight = "4px solid blue";
+          topLineDiv.style.borderBottom = "4px solid blue";
+          timelinePlaneElem.appendChild(topLineDiv);
+
+          const bottomLineDiv = document.createElement("div");
+          bottomLineDiv.style.position = "absolute";
+          bottomLineDiv.style.zIndex = 1;
+          bottomLineDiv.style.top = `${prevLangSlot.top + (timelineSlotTop - prevLangSlot.top) / 2}px`;
+          bottomLineDiv.style.left = `${prevLangSlot.left - slotGap}px`;
+          bottomLineDiv.style.height = `${(timelineSlotTop - prevLangSlot.top) / 2}px`;
+          bottomLineDiv.style.borderTop = "4px solid green";
+          bottomLineDiv.style.borderLeft = "4px solid green";
+          timelinePlaneElem.appendChild(bottomLineDiv);
+        } else if (prevLangSlotIndex < i) {
+
+        } else {
+          const vertLineDiv = document.createElement("div");
+          vertLineDiv.style.position = "absolute";
+          vertLineDiv.style.zIndex = 1;
+          vertLineDiv.style.top = `${prevLangSlot.top}px`;
+          vertLineDiv.style.left = `${prevLangSlot.left}px`;
+          vertLineDiv.style.height = `${timelineSlotTop - prevLangSlot.top}px`;
+          vertLineDiv.style.borderLeft = "4px solid red";
+          timelinePlaneElem.appendChild(vertLineDiv);
+        }
+      }
+    }
+
+    prevLangSlots.clear();
+    for (let i = 0; i < langSlots.length; i++) {
+      prevLangSlots.set(langSlots[i].langIndex, {
+        slotIndex: i,
+        top: timelineSlotTop,
+        left: langEventLeft,
+      });
     }
 
     if (langEvent.init) {
@@ -71,7 +117,7 @@ function renderTimeline(sortedLangEvents) {
       }
     });
 
-    const labeledDot = renderLabeledDot(timelineSlotTop, langEventLeft, eventLabel);
+    const labeledDot = renderLabeledDot(langEventTop, langEventLeft, eventLabel);
     timelinePlaneElem.appendChild(labeledDot);
   }
   timelineSlotTop += timelineSlotHeight;
