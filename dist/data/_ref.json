@@ -2,6 +2,7 @@
     "languages": [
         "python",
         "java",
+        "ruby",
         "rust",
         "kotlin"
     ]
