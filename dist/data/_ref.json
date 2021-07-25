@@ -1,6 +1,7 @@
 {
     "languages": [
         "java",
+        "rust",
         "kotlin"
     ]
 }
