@@ -22,19 +22,45 @@ async function main(rootLangRef) {
 }
 
 function renderTimeline(sortedLangEvents) {
+  const timelinePlaneWidth = document.documentElement.clientWidth || document.body.clientWidth;
   const timelinePlaneElem = document.createElement("div").myAlso((it) => {
     it.style.position = "relative";
-    it.style.width = "700px";
-    it.style.height = "1000px"; // TODO: compute from event count
+    it.style.width = `${timelinePlaneWidth}px`;
     it.style.background = "aliceblue";
   });
 
-  const timelineSlotHeight = 50;
-  const prevEventByLang = new Map();
+  const timelineSlotHeight = 70;
+  const langSlots = [];
+  const prevLangSlotIndices = new Map();
 
   let timelineSlotTop = 0;
   for (langEvent of sortedLangEvents) {
     timelineSlotTop += timelineSlotHeight;
+
+    let langSlotIndex = langSlots.findIndex((it) => langEvent.langIndex >= it.langIndex);
+    if (langSlotIndex === -1) {
+      // append
+      langSlotIndex = langSlots.length;
+      langSlots.push(langEvent);
+    } else if (langSlots[langSlotIndex].langIndex === langEvent.langIndex) {
+      // replace
+      langSlots[langSlotIndex] = langEvent;
+    } else {
+      // insert before
+      langSlots.splice(langSlotIndex, 0, langEvent);
+    }
+
+    const langSlotWidthStep = timelinePlaneWidth / (langSlots.length + 1);
+    const langEventLeft = langSlotWidthStep * (langSlotIndex + 1);
+
+    prevLangSlotIndices.clear();
+    for (let i = 0; i < langSlots.length; i++) {
+      prevLangSlotIndices.set(langSlots[i].langIndex, i);
+    }
+
+    if (langEvent.init) {
+      langSlots.splice(langSlotIndex, 1);
+    }
 
     const eventLabel = document.createElement("div").myAlso((it) => {
       it.style.background = "#fafafa";
@@ -45,7 +71,7 @@ function renderTimeline(sortedLangEvents) {
       }
     });
 
-    const labeledDot = renderLabeledDot(timelineSlotTop, 50, eventLabel);
+    const labeledDot = renderLabeledDot(timelineSlotTop, langEventLeft, eventLabel);
     timelinePlaneElem.appendChild(labeledDot);
   }
   timelineSlotTop += timelineSlotHeight;
@@ -124,9 +150,7 @@ function sortLangEvents(langDataset) {
 async function fetchLangDataset(languages) {
   const langDataList = [];
   for (const langKey of languages) {
-    const langData = await fetch(`./data/${langKey}.json`).then((it) =>
-      it.json()
-    );
+    const langData = await fetch(`./data/${langKey}.json`).then((it) => it.json());
     langDataList.push(langData);
   }
   return langDataList;
