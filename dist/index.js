@@ -16,18 +16,19 @@ async function main(rootLangRef) {
   const sortedLangEvents = sortLangEvents(langDataset);
 
   const rootElem = document.getElementById("root");
-  rootElem.appendChild(document.createElement("hr"));
-
-  // rootElem.appendChild(renderTimeline(sortedLangEvents));
-  renderTimeline(rootElem, sortedLangEvents);
+  const timelineContainerDiv = document.createElement("div");
+  timelineContainerDiv.classList.add("center");
+  rootElem.appendChild(timelineContainerDiv);
+  renderTimeline(timelineContainerDiv, sortedLangEvents);
 }
 
 function renderTimeline(domParent, sortedLangEvents) {
-  const timelinePlaneWidth = document.documentElement.clientWidth || document.body.clientWidth;
+  const docWidth = document.documentElement.clientWidth || document.body.clientWidth
+  const timelinePlaneWidth = docWidth * 0.8;
   const timelinePlaneElem = document.createElement("div").myAlso((it) => {
     it.style.position = "relative";
     it.style.width = `${timelinePlaneWidth}px`;
-    it.style.background = "aliceblue";
+    // it.style.background = "aliceblue";
   });
   domParent.appendChild(timelinePlaneElem);
 
@@ -84,68 +85,64 @@ function renderTimeline(domParent, sortedLangEvents) {
       const midHeight = (curLangSlotTop - prevLangSlotTop) / 2;
       const midWidth = Math.abs(prevLangSlotLeft - curLangSlotLeft) / 2;
 
-      const lineBorderWidth = 10;
-      const lineBorderRadius = 10;
+      const lineBorderWidth = 14;
+      const lineBorderRadius = lineBorderWidth;
+      const lineZIndex = 0;
+      const lineColor = "lightskyblue";
+
+      const createLineDiv = () => {
+        const div = document.createElement("div");
+        div.style.position = "absolute";
+        div.style.zIndex = lineZIndex;
+        div.style.width = `${midWidth}px`;
+        div.style.height = `${midHeight}px`;
+        div.style.borderStyle = "solid";
+        div.style.borderWidth = 0;
+        div.style.borderColor = lineColor;
+        return div;
+      };
 
       if (
         curLangSlotIndex < prevLangSlotIndex ||
         (curLangSlotIndex === prevLangSlotIndex && prevLangSlots.size < langSlots.length)
       ) {
-        const topLineDiv = document.createElement("div");
-        topLineDiv.style.position = "absolute";
-        topLineDiv.style.zIndex = 1;
+        const topLineDiv = createLineDiv();
         topLineDiv.style.top = `${prevLangSlotTop}px`;
         topLineDiv.style.left = `${midLeft}px`;
-        topLineDiv.style.width = `${midWidth}px`;
-        topLineDiv.style.height = `${midHeight}px`;
-        topLineDiv.style.borderRight = `${lineBorderWidth}px solid blue`;
-        topLineDiv.style.borderBottom = `${lineBorderWidth}px solid blue`;
-        topLineDiv.style.borderRadius = `${lineBorderRadius}px`;
+        topLineDiv.style.borderRightWidth = `${lineBorderWidth}px`;
+        topLineDiv.style.borderBottomWidth = `${lineBorderWidth}px`;
+        topLineDiv.style.borderBottomRightRadius = `${lineBorderRadius}px`;
         timelinePlaneElem.appendChild(topLineDiv);
 
-        const bottomLineDiv = document.createElement("div");
-        bottomLineDiv.style.position = "absolute";
-        bottomLineDiv.style.zIndex = 1;
+        const bottomLineDiv = createLineDiv();
         bottomLineDiv.style.top = `${midTop}px`;
         bottomLineDiv.style.left = `${curLangSlotLeft}px`;
-        bottomLineDiv.style.width = `${midWidth}px`;
-        bottomLineDiv.style.height = `${midHeight}px`;
-        bottomLineDiv.style.borderTop = `${lineBorderWidth}px solid green`;
-        bottomLineDiv.style.borderLeft = `${lineBorderWidth}px solid green`;
-        bottomLineDiv.style.borderRadius = `${lineBorderRadius}px`;
+        bottomLineDiv.style.borderTopWidth = `${lineBorderWidth}px`;
+        bottomLineDiv.style.borderLeftWidth = `${lineBorderWidth}px`;
+        bottomLineDiv.style.borderTopLeftRadius = `${lineBorderRadius}px`;
         timelinePlaneElem.appendChild(bottomLineDiv);
       } else if (prevLangSlotIndex < curLangSlotIndex) {
-        const topLineDiv = document.createElement("div");
-        topLineDiv.style.position = "absolute";
-        topLineDiv.style.zIndex = 1;
+        const topLineDiv = createLineDiv();
         topLineDiv.style.top = `${prevLangSlotTop}px`;
         topLineDiv.style.left = `${prevLangSlotLeft}px`;
-        topLineDiv.style.width = `${midWidth}px`;
-        topLineDiv.style.height = `${midHeight}px`;
-        topLineDiv.style.borderLeft = `${lineBorderWidth}px solid orange`;
-        topLineDiv.style.borderBottom = `${lineBorderWidth}px solid orange`;
-        topLineDiv.style.borderRadius = `${lineBorderRadius}px`;
+        topLineDiv.style.borderLeftWidth = `${lineBorderWidth}px`;
+        topLineDiv.style.borderBottomWidth = `${lineBorderWidth}px`;
+        topLineDiv.style.borderBottomLeftRadius = `${lineBorderRadius}px`;
         timelinePlaneElem.appendChild(topLineDiv);
 
-        const bottomLineDiv = document.createElement("div");
-        bottomLineDiv.style.position = "absolute";
-        bottomLineDiv.style.zIndex = 1;
+        const bottomLineDiv = createLineDiv();;
         bottomLineDiv.style.top = `${midTop}px`;
         bottomLineDiv.style.left = `${midLeft}px`;
-        bottomLineDiv.style.width = `${midWidth}px`;
-        bottomLineDiv.style.height = `${midHeight}px`;
-        bottomLineDiv.style.borderTop = `${lineBorderWidth}px solid green`;
-        bottomLineDiv.style.borderRight = `${lineBorderWidth}px solid green`;
-        bottomLineDiv.style.borderRadius = `${lineBorderRadius}px`;
+        bottomLineDiv.style.borderTopWidth = `${lineBorderWidth}px`;
+        bottomLineDiv.style.borderRightWidth = `${lineBorderWidth}px`;
+        bottomLineDiv.style.borderTopRightRadius = `${lineBorderRadius}px`;
         timelinePlaneElem.appendChild(bottomLineDiv);
       } else {
-        const vertLineDiv = document.createElement("div");
-        vertLineDiv.style.position = "absolute";
-        vertLineDiv.style.zIndex = 1;
+        const vertLineDiv = createLineDiv();
         vertLineDiv.style.top = `${prevLangSlotTop}px`;
         vertLineDiv.style.left = `${prevLangSlotLeft}px`;
         vertLineDiv.style.height = `${midHeight * 2}px`;
-        vertLineDiv.style.borderLeft = `${lineBorderWidth}px solid yellow`;
+        vertLineDiv.style.borderLeftWidth = `${lineBorderWidth}px`;
         timelinePlaneElem.appendChild(vertLineDiv);
       }
     }
@@ -167,7 +164,6 @@ function renderTimeline(domParent, sortedLangEvents) {
     }
 
     const eventLabel = document.createElement("div").myAlso((it) => {
-      it.style.background = "#fafafacc";
       if (langEvent.init) {
         it.innerHTML = `<b>${langEvent.language} (${langEvent.date})</b>`;
       } else {
@@ -190,27 +186,29 @@ function renderLabeledDot(top, left, labelContent) {
 
   const dotDiv = document.createElement("div");
   dotDiv.style.position = "absolute";
+  dotDiv.style.zIndex = 5;
   dotDiv.style.top = `${top}px`;
   dotDiv.style.left = `${left}px`;
   dotDiv.style.margin = "0";
   dotDiv.style.height = `${dotSide}px`;
   dotDiv.style.width = `${dotSide}px`;
-  dotDiv.style.border = "2px solid black";
-  // dotDiv.style.borderRadius = "5px";
+  dotDiv.style.background = "seashell";
+  dotDiv.style.border = "2px solid lightskyblue";
 
   const labelDivHeight = 30;
   const labelDivFullHeight = labelDivHeight + (1 + 5) * 2;
   const labelDiv = document.createElement("div");
+  labelDiv.classList.add("center");
   labelDiv.style.position = "absolute";
   labelDiv.style.top = `${-((labelDivFullHeight - dotSide) / 2)}px`;
   labelDiv.style.left = `${dotSide + 5}px`;
   labelDiv.style.zIndex = 10;
   labelDiv.style.height = `${labelDivHeight}px`;
   labelDiv.style.width = "max-content";
-  labelDiv.style.padding = "5px";
-  labelDiv.style.border = "1px solid black";
-  // labelDiv.style.borderRadius = "5px";
-  labelDiv.style.background = "#ffffffcc";
+  labelDiv.style.padding = "5px 10px";
+  labelDiv.style.border = "1px solid #cccccc";
+  labelDiv.style.borderRadius = "5px";
+  labelDiv.style.background = "#ffffffdd";
 
   labelDiv.appendChild(labelContent);
 
