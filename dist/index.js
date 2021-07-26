@@ -18,24 +18,27 @@ async function main(rootLangRef) {
   const rootElem = document.getElementById("root");
   rootElem.appendChild(document.createElement("hr"));
 
-  rootElem.appendChild(renderTimeline(sortedLangEvents));
+  // rootElem.appendChild(renderTimeline(sortedLangEvents));
+  renderTimeline(rootElem, sortedLangEvents);
 }
 
-function renderTimeline(sortedLangEvents) {
+function renderTimeline(domParent, sortedLangEvents) {
   const timelinePlaneWidth = document.documentElement.clientWidth || document.body.clientWidth;
   const timelinePlaneElem = document.createElement("div").myAlso((it) => {
     it.style.position = "relative";
     it.style.width = `${timelinePlaneWidth}px`;
     it.style.background = "aliceblue";
   });
+  domParent.appendChild(timelinePlaneElem);
 
   const timelineSlotHeight = 70;
   const langSlots = [];
   const prevLangSlots = new Map();
 
   let timelineSlotTop = 0;
-  for (langEvent of sortedLangEvents) {
+  for (const langEvent of sortedLangEvents) {
     timelineSlotTop += timelineSlotHeight;
+    timelinePlaneElem.style.height = `${timelineSlotTop + timelineSlotHeight}px`;
 
     let langSlotIndex = langSlots.findIndex((it) => langEvent.langIndex >= it.langIndex);
     if (langSlotIndex === -1) {
@@ -50,57 +53,112 @@ function renderTimeline(sortedLangEvents) {
       langSlots.splice(langSlotIndex, 0, langEvent);
     }
 
-    const langEventTop = timelineSlotTop;
     const langSlotWidthStep = timelinePlaneWidth / (langSlots.length + 1);
-    const langEventLeft = langSlotWidthStep * (langSlotIndex + 1);
 
-    for (let i = 0; i < langSlots.length; i++) {
-      const langIndex = langSlots[i].langIndex;
-      const prevLangSlot = prevLangSlots.get(langIndex);
-      if (prevLangSlot !== undefined) {
-        const prevLangSlotIndex = prevLangSlot.slotIndex;
-        if (i < prevLangSlotIndex) {
-          const slotGap = prevLangSlotIndex - i;
-          const topLineDiv = document.createElement("div");
-          topLineDiv.style.position = "absolute";
-          topLineDiv.style.zIndex = 1;
-          topLineDiv.style.top = `${prevLangSlot.top}px`;
-          topLineDiv.style.left = `${prevLangSlot.left - slotGap / 2}px`;
-          topLineDiv.style.height = `${(timelineSlotTop - prevLangSlot.top) / 2}px`;
-          topLineDiv.style.borderRight = "4px solid blue";
-          topLineDiv.style.borderBottom = "4px solid blue";
-          timelinePlaneElem.appendChild(topLineDiv);
+    for (let curLangSlotIndex = 0; curLangSlotIndex < langSlots.length; curLangSlotIndex++) {
+      const curLangSlot = langSlots[curLangSlotIndex];
+      const curLangIndex = curLangSlot.langIndex;
+      const curLangSlotTop = timelineSlotTop;
+      const curLangSlotLeft = langSlotWidthStep * (curLangSlotIndex + 1);
 
-          const bottomLineDiv = document.createElement("div");
-          bottomLineDiv.style.position = "absolute";
-          bottomLineDiv.style.zIndex = 1;
-          bottomLineDiv.style.top = `${prevLangSlot.top + (timelineSlotTop - prevLangSlot.top) / 2}px`;
-          bottomLineDiv.style.left = `${prevLangSlot.left - slotGap}px`;
-          bottomLineDiv.style.height = `${(timelineSlotTop - prevLangSlot.top) / 2}px`;
-          bottomLineDiv.style.borderTop = "4px solid green";
-          bottomLineDiv.style.borderLeft = "4px solid green";
-          timelinePlaneElem.appendChild(bottomLineDiv);
-        } else if (prevLangSlotIndex < i) {
+      const dotDiv = document.createElement("div");
+      dotDiv.style.position = "absolute";
+      dotDiv.style.top = `${curLangSlotTop}px`;
+      dotDiv.style.left = `${curLangSlotLeft}px`;
+      dotDiv.style.height = `${10}px`;
+      dotDiv.style.width = `${10}px`;
+      dotDiv.style.border = "2px solid darkgrey";
+      dotDiv.style.background = "darkgrey";
+      dotDiv.setAttribute("lang", curLangSlot.language);
+      timelinePlaneElem.appendChild(dotDiv);
 
-        } else {
-          const vertLineDiv = document.createElement("div");
-          vertLineDiv.style.position = "absolute";
-          vertLineDiv.style.zIndex = 1;
-          vertLineDiv.style.top = `${prevLangSlot.top}px`;
-          vertLineDiv.style.left = `${prevLangSlot.left}px`;
-          vertLineDiv.style.height = `${timelineSlotTop - prevLangSlot.top}px`;
-          vertLineDiv.style.borderLeft = "4px solid red";
-          timelinePlaneElem.appendChild(vertLineDiv);
-        }
+      const prevLangSlot = prevLangSlots.get(curLangIndex);
+      if (prevLangSlot === undefined) continue;
+      const prevLangSlotIndex = prevLangSlot.slotIndex;
+
+      const prevLangSlotTop = prevLangSlot.top;
+      const prevLangSlotLeft = prevLangSlot.left;
+
+      const midLeft = (prevLangSlotLeft + curLangSlotLeft) / 2;
+      const midTop = (prevLangSlotTop + curLangSlotTop) / 2;
+      const midHeight = (curLangSlotTop - prevLangSlotTop) / 2;
+      const midWidth = Math.abs(prevLangSlotLeft - curLangSlotLeft) / 2;
+
+      const lineBorderWidth = 10;
+      const lineBorderRadius = 10;
+
+      if (
+        curLangSlotIndex < prevLangSlotIndex ||
+        (curLangSlotIndex === prevLangSlotIndex && prevLangSlots.size < langSlots.length)
+      ) {
+        const topLineDiv = document.createElement("div");
+        topLineDiv.style.position = "absolute";
+        topLineDiv.style.zIndex = 1;
+        topLineDiv.style.top = `${prevLangSlotTop}px`;
+        topLineDiv.style.left = `${midLeft}px`;
+        topLineDiv.style.width = `${midWidth}px`;
+        topLineDiv.style.height = `${midHeight}px`;
+        topLineDiv.style.borderRight = `${lineBorderWidth}px solid blue`;
+        topLineDiv.style.borderBottom = `${lineBorderWidth}px solid blue`;
+        topLineDiv.style.borderRadius = `${lineBorderRadius}px`;
+        timelinePlaneElem.appendChild(topLineDiv);
+
+        const bottomLineDiv = document.createElement("div");
+        bottomLineDiv.style.position = "absolute";
+        bottomLineDiv.style.zIndex = 1;
+        bottomLineDiv.style.top = `${midTop}px`;
+        bottomLineDiv.style.left = `${curLangSlotLeft}px`;
+        bottomLineDiv.style.width = `${midWidth}px`;
+        bottomLineDiv.style.height = `${midHeight}px`;
+        bottomLineDiv.style.borderTop = `${lineBorderWidth}px solid green`;
+        bottomLineDiv.style.borderLeft = `${lineBorderWidth}px solid green`;
+        bottomLineDiv.style.borderRadius = `${lineBorderRadius}px`;
+        timelinePlaneElem.appendChild(bottomLineDiv);
+      } else if (prevLangSlotIndex < curLangSlotIndex) {
+        const topLineDiv = document.createElement("div");
+        topLineDiv.style.position = "absolute";
+        topLineDiv.style.zIndex = 1;
+        topLineDiv.style.top = `${prevLangSlotTop}px`;
+        topLineDiv.style.left = `${prevLangSlotLeft}px`;
+        topLineDiv.style.width = `${midWidth}px`;
+        topLineDiv.style.height = `${midHeight}px`;
+        topLineDiv.style.borderLeft = `${lineBorderWidth}px solid orange`;
+        topLineDiv.style.borderBottom = `${lineBorderWidth}px solid orange`;
+        topLineDiv.style.borderRadius = `${lineBorderRadius}px`;
+        timelinePlaneElem.appendChild(topLineDiv);
+
+        const bottomLineDiv = document.createElement("div");
+        bottomLineDiv.style.position = "absolute";
+        bottomLineDiv.style.zIndex = 1;
+        bottomLineDiv.style.top = `${midTop}px`;
+        bottomLineDiv.style.left = `${midLeft}px`;
+        bottomLineDiv.style.width = `${midWidth}px`;
+        bottomLineDiv.style.height = `${midHeight}px`;
+        bottomLineDiv.style.borderTop = `${lineBorderWidth}px solid green`;
+        bottomLineDiv.style.borderRight = `${lineBorderWidth}px solid green`;
+        bottomLineDiv.style.borderRadius = `${lineBorderRadius}px`;
+        timelinePlaneElem.appendChild(bottomLineDiv);
+      } else {
+        const vertLineDiv = document.createElement("div");
+        vertLineDiv.style.position = "absolute";
+        vertLineDiv.style.zIndex = 1;
+        vertLineDiv.style.top = `${prevLangSlotTop}px`;
+        vertLineDiv.style.left = `${prevLangSlotLeft}px`;
+        vertLineDiv.style.height = `${midHeight * 2}px`;
+        vertLineDiv.style.borderLeft = `${lineBorderWidth}px solid yellow`;
+        timelinePlaneElem.appendChild(vertLineDiv);
       }
     }
+
+    const langEventTop = timelineSlotTop;
+    const langEventLeft = langSlotWidthStep * (langSlotIndex + 1);
 
     prevLangSlots.clear();
     for (let i = 0; i < langSlots.length; i++) {
       prevLangSlots.set(langSlots[i].langIndex, {
         slotIndex: i,
         top: timelineSlotTop,
-        left: langEventLeft,
+        left: langSlotWidthStep * (i + 1),
       });
     }
 
@@ -109,7 +167,7 @@ function renderTimeline(sortedLangEvents) {
     }
 
     const eventLabel = document.createElement("div").myAlso((it) => {
-      it.style.background = "#fafafa";
+      it.style.background = "#fafafacc";
       if (langEvent.init) {
         it.innerHTML = `<b>${langEvent.language} (${langEvent.date})</b>`;
       } else {
@@ -152,7 +210,7 @@ function renderLabeledDot(top, left, labelContent) {
   labelDiv.style.padding = "5px";
   labelDiv.style.border = "1px solid black";
   // labelDiv.style.borderRadius = "5px";
-  labelDiv.style.background = "white";
+  labelDiv.style.background = "#ffffffcc";
 
   labelDiv.appendChild(labelContent);
 
