@@ -207,6 +207,7 @@ function renderLabeledDot(top, left, labelContent) {
   labelDiv.style.width = "max-content";
   labelDiv.style.padding = "5px 10px";
   labelDiv.style.border = "1px solid #cccccc";
+  labelDiv.style.borderLeftWidth = "3px";
   labelDiv.style.borderRadius = "5px";
   labelDiv.style.background = "#ffffffdd";
 
