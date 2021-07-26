@@ -32,7 +32,7 @@ function renderTimeline(domParent, sortedLangEvents) {
   });
   domParent.appendChild(timelinePlaneElem);
 
-  const timelineSlotHeight = 70;
+  const timelineSlotHeight = 80;
   const langSlots = [];
   const prevLangSlots = new Map();
 
